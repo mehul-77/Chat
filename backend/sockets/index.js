@@ -2,32 +2,41 @@ export const socketHandler = (io) => {
     const users = {};
 
     io.on("connection", (socket) => {
-        console.log("User connected:", socket.id);
 
         socket.on("join", (userId) => {
             users[userId] = socket.id;
+            socket.join(userId);
             io.emit("onlineUsers", Object.keys(users));
         });
 
-        socket.on("sendMessage", (data) => {
-            const receiverSocket = users[data.receiverId];
-            if (receiverSocket) {
-                io.to(receiverSocket).emit("receiveMessage", data);
-            }
+        socket.on("joinChat", (chatId) => {
+            socket.join(chatId);
         });
 
-        socket.on("typing", ({ to }) => {
-            const receiverSocket = users[to];
-            if (receiverSocket) {
-                io.to(receiverSocket).emit("typing");
-            }
+        socket.on("sendMessage", (data) => {
+            io.to(data.chatId).emit("receiveMessage", data);
+        });
+
+        socket.on("typing", ({ chatId }) => {
+            socket.to(chatId).emit("typing");
+        });
+
+        // 🔥 WebRTC signaling
+        socket.on("webrtc-offer", ({ to, offer }) => {
+            io.to(users[to]).emit("webrtc-offer", offer);
+        });
+
+        socket.on("webrtc-answer", ({ to, answer }) => {
+            io.to(users[to]).emit("webrtc-answer", answer);
+        });
+
+        socket.on("webrtc-ice-candidate", ({ to, candidate }) => {
+            io.to(users[to]).emit("webrtc-ice-candidate", candidate);
         });
 
         socket.on("disconnect", () => {
-            for (let userId in users) {
-                if (users[userId] === socket.id) {
-                    delete users[userId];
-                }
+            for (let id in users) {
+                if (users[id] === socket.id) delete users[id];
             }
             io.emit("onlineUsers", Object.keys(users));
         });
