@@ -1,9 +1,7 @@
+import ChatPage from "./pages/ChatPage";
+
 function App() {
-  return (
-    <div className="bg-red-500 text-white text-4xl">
-      Tailwind works 🚀
-    </div>
-  )
+  return <ChatPage />;
 }
 
-export default App
+export default App;
