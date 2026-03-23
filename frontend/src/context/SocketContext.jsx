@@ -7,10 +7,10 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5000");
-    setSocket(newSocket);
+    const socketInstance = io("http://localhost:5000"); // backend URL
+    setSocket(socketInstance);
 
-    return () => newSocket.close();
+    return () => socketInstance.disconnect();
   }, []);
 
   return (
@@ -19,12 +19,3 @@ export const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   );
 };
-
-socket.emit("send_message", {
-  to: userId,
-  message: encryptedMessage
-});
-
-socket.on("receive_message", (data) => {
-  console.log(data);
-});
